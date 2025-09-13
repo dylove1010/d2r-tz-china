@@ -15,7 +15,10 @@ http.createServer((_, res) => res.end('ok'))
 async function check() {
   try {
     console.log('[Check] 开始抓取...');
-    const { zone, time } = (await axios.get(URL, { timeout: 10000 })).data;
+   const { zone, time } = (await axios.get(URL, {
+  timeout: 10000,
+  headers: { 'Accept-Language': 'zh-CN,zh;q=0.9' }
+})).data;
     const text = `${zone} (${time})`;
 
     /* 哈希对比 */
