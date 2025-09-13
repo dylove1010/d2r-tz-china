@@ -23,8 +23,8 @@ async function check() {
     const rawText = $('.tooltip-container').text().trim();   // 核心正文
     const text = rawText.replace(/\s+/g, ' ');               // 去换行
 
-    /* 2. 截 40 字，防详情页转圈 */
-    const desp = text.slice(0, 40) + (text.length > 40 ? '...' : '');
+    
+   const desp = text.slice(0, 600);   // Server 酱上限约 60 k，600 字安全
 
     /* 3. 哈希对比 */
     const hash = Buffer.from(text).toString('base64').slice(0, 32);
@@ -56,5 +56,5 @@ async function push(title, desp) {
 }
 
 /* 30 秒一次，立即跑一次（测试完改回 30 分钟） */
-cron.schedule('*/30 * * * * *', check);
-check();
+cron.schedule('*/30 * * * *', check);
+//check();
