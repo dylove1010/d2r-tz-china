@@ -3,6 +3,7 @@ import * as cheerio from 'cheerio';
 import http   from 'http';
 import cron   from 'node-cron';
 
+
 const URL     = 'https://d2emu.com/tz-china';          // 网页版
 const WEBHOOK = 'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=45022bb5-22a7-468c-a750-4f3c89ed4253';
 let lastHash = Date.now().toString();   // 启动必不同，强制推一次（测试完可改回 ''）
@@ -16,9 +17,12 @@ http.createServer((_, res) => res.end('ok'))
 async function check() {
   try {
     console.log('[Check] 开始抓取...');
-    const { data } = await axios.get(URL, {
-      timeout: 10000,
-      headers: { 'Accept-Language': 'zh-CN,zh;q=0.9' }   // 强制中文
+   const { data } = await axios.get(URL, {
+  timeout: 10000,
+  headers: {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'Accept-Language': 'zh-CN,zh;q=0.9'
+  }
     });
     const $ = cheerio.load(data);
     const text = $('.tooltip-container').text().replace(/\s+/g, ' ').trim();
