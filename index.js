@@ -10,7 +10,7 @@ let lastHash = '';
 /* ----- 占端口，让 Render 通过健康检查 ----- */
 const PORT = process.env.PORT || 3000;
 http.createServer((_, res) => res.end('ok'))
-    .listen(PORT, '0.0.0.0', () => console.log(`Listening on ${PORT}`)));
+    .listen(PORT, '0.0.0.0', () => console.log(`Listening on ${PORT}`));
 
 /* ----- 主检查 ----- */
 async function check() {
