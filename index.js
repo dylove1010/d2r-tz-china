@@ -3,14 +3,14 @@ import * as cheerio from 'cheerio';
 import http   from 'http';
 import cron   from 'node-cron';
 
-const URL        = 'https://d2emu.com/tz-china';
-const SERVER_KEY = process.env.SERVER_KEY;   // Server 酱 SendKey
+const URL     = 'https://d2emu.com/tz-china';
+const WEBHOOK = 'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=45022bb5-22a7-468c-a750-4f3c89ed4253';
 let lastHash = '';
 
 /* ----- 占端口，让 Render 通过健康检查 ----- */
 const PORT = process.env.PORT || 3000;
 http.createServer((_, res) => res.end('ok'))
-    .listen(PORT, '0.0.0.0', () => console.log(`Listening on ${PORT}`));
+    .listen(PORT, '0.0.0.0', () => console.log(`Listening on ${PORT}`)));
 
 /* ----- 主检查 ----- */
 async function check() {
@@ -20,18 +20,15 @@ async function check() {
     const $ = cheerio.load(data);
 
     /* 1. 只拿“当前恐怖区域”文本块 */
-    const rawText = $('.tooltip-container').text().trim();   // 核心正文
-    const text = rawText.replace(/\s+/g, ' ');               // 去换行
+    const rawText = $('.tooltip-container').text().trim();
+    const text = rawText.replace(/\s+/g, ' ');   // 去换行
 
-    
-   const desp = text.slice(0, 600);   // Server 酱上限约 60 k，600 字安全
-
-    /* 3. 哈希对比 */
+    /* 2. 哈希对比 */
     const hash = Buffer.from(text).toString('base64').slice(0, 32);
-    if (!lastHash) lastHash = 'force-trigger-' + Date.now(); // 第一次必推
+    if (!lastHash) lastHash = 'force-trigger-' + Date.now();
     if (hash !== lastHash) {
       console.log('[Check] 检测到变化，推送中...');
-      await push('网页已更新', desp);
+      await push('网页已更新', text);
     } else {
       console.log('[Check] 无变化');
     }
@@ -41,20 +38,22 @@ async function check() {
   }
 }
 
-/* ----- 微信推送 ----- */
-async function push(title, desp) {
-  if (!SERVER_KEY) return;
+/* ----- 企业微信机器人推送 ----- */
+async function push(title, text) {
+  if (!WEBHOOK) return;
   try {
-    await axios.post(
-      `https://sctapi.ftqq.com/${SERVER_KEY}.send`,
-      { title, desp }
-    );
-    console.log('[Push] 已发送');
+    /* Markdown 格式，微信内直接展开全文 */
+    const content = `**${title}**\n>${text.slice(0, 2000)}`;
+    await axios.post(WEBHOOK, {
+      msgtype: 'markdown',
+      markdown: { content }
+    });
+    console.log('[Push] 企业微信机器人已发送');
   } catch (e) {
-    console.error('[Push] 失败', e.response?.data || e.message);
+    console.error('[Push] 机器人失败', e.response?.data || e.message);
   }
 }
 
-/* 30 秒一次，立即跑一次（测试完改回 30 分钟） */
-cron.schedule('*/30 * * * *', check);
-//check();
+/* 30 秒一次，立即跑一次（测试完改回 30 分）*/
+cron.schedule('*/30 * * * * *', check);
+check();
