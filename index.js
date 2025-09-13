@@ -26,6 +26,7 @@ async function check() {
     const hash = Buffer.from(text).toString('base64').slice(0, 32);
     console.log('[Check] 本次哈希', hash);
 
+      if (!lastHash) lastHash = 'force-trigger-' + Date.now();
     if (lastHash && hash !== lastHash) {
       console.log('[Check] 检测到变化，推送中...');
       await push('网页已更新', text);   // 标题 + 正文
@@ -51,7 +52,7 @@ async function push(title, desp) {
     console.error('[Push] 失败', e.response?.data || e.message);
   }
 }
-let lastHash = 'force-trigger-' + Date.now();
+
 /* 30 分钟一次，立即跑一次 */
 cron.schedule('*/30 * * * * *', check);
 check();
