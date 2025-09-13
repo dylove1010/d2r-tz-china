@@ -5,6 +5,14 @@ from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
+options = Options()
+options.binary_location = '/usr/bin/chromium-browser' # 关键：指定路径
+options.add_argument('--no-sandbox')
+options.add_argument('--disable-dev-shm-usage')
+options.add_argument('--headless') # 无界面模式
+
+driver = webdriver.Chrome(options=options)
+
 # 替换成你的企业微信Webhook地址
 WEBHOOK_URL = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=b0bcfe46-3aa1-4071-afd5-da63be5a8644"
 
