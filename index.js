@@ -31,3 +31,5 @@ async function push(text) {
 
 cron.schedule('*/1 * * * *', check); // 每 1 分钟
 check(); // 启动立即跑一次
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, '0.0.0.0', () => console.log(`Listening on ${PORT}`));
