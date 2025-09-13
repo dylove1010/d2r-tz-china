@@ -1,29 +1,24 @@
-import axios  from 'axios';
-import * as cheerio from 'cheerio';
-import http   from 'http';
-import cron   from 'node-cron';
+import axios from 'axios';
+import http from 'http';
+import cron from 'node-cron';
 
-const URL     = 'https://d2emu.com/tz-china';
-const WEBHOOK = 'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=b0bcfe46-3aa1-4071-afd5-da63be5a8644';
+const URL = 'https://d2emu.com/api/tz-china';   // 中文 JSON 接口
+const WEBHOOK = 'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=45022bb5-22a7-468c-a750-4f3c89ed4253';
 let lastHash = '';
 
 /* ----- 占端口，让 Render 通过健康检查 ----- */
 const PORT = process.env.PORT || 3000;
 http.createServer((_, res) => res.end('ok'))
-    .listen(PORT, '0.0.0.0', () => console.log(`Listening on ${PORT}`));
+    .listen(PORT, '0.0.0.0', () => console.log(`Listening on ${PORT}`)));
 
 /* ----- 主检查 ----- */
 async function check() {
   try {
     console.log('[Check] 开始抓取...');
-    const { data } = await axios.get(URL, { timeout: 10000 });
-    const $ = cheerio.load(data);
+    const { zone, time } = (await axios.get(URL, { timeout: 10000 })).data;
+    const text = `${zone} (${time})`;
 
-    /* 1. 只拿“当前恐怖区域”文本块 */
-    const rawText = $('.tooltip-container').text().trim();
-    const text = rawText.replace(/\s+/g, ' ');   // 去换行
-
-    /* 2. 哈希对比 */
+    /* 哈希对比 */
     const hash = Buffer.from(text).toString('base64').slice(0, 32);
     if (!lastHash) lastHash = 'force-trigger-' + Date.now();
     if (hash !== lastHash) {
@@ -42,8 +37,7 @@ async function check() {
 async function push(title, text) {
   if (!WEBHOOK) return;
   try {
-    /* Markdown 格式，微信内直接展开全文 */
-    const content = `**${title}**\n>${text.slice(0, 2000)}`;
+    const content = `**${title}**\n>${text}`;
     await axios.post(WEBHOOK, {
       msgtype: 'markdown',
       markdown: { content }
