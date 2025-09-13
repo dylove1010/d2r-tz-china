@@ -1,28 +1,26 @@
 import axios from 'axios';
 import puppeteer from 'puppeteer';
-import http  from 'http';
-import cron  from 'node-cron';
+import http from 'http';
+import cron from 'node-cron';
 import crypto from 'crypto';
 
-const URL     = 'https://d2emu.com/tz-china';
+const URL = 'https://d2emu.com/tz-china';
 const WEBHOOK = 'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=b0bcfe46-3aa1-4071-afd5-da63be5a8644';
 
-/* ----- 占端口，让 Render 通过健康检查 ----- */
 const PORT = process.env.PORT || 3000;
 http.createServer((_, res) => res.end('ok'))
-    .listen(PORT, '0.0.0.0', () => console.log(`Listening on ${PORT}`));
+    .listen(PORT, '0.0.0.0', () => console.log(`Listening on ${PORT}`)));
 
-/* ----- 截图并推送 ----- */
 async function screenshotAndPush() {
   let browser;
   try {
-    console.log('[Screenshot] 打开浏览器...');
-   browser = await puppeteer.launch({
-  executablePath: undefined,          // 让库自动下载浏览器
-  args: ['--no-sandbox', '--disable-setuid-sandbox'],
-  headless: true,
-  defaultViewport: { width: 1280, height: 720 }
-});
+    console.log('[Screenshot] 启动浏览器...');
+    browser = await puppeteer.launch({
+      executablePath: undefined,                      // 自动下载
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      headless: true,
+      defaultViewport: { width: 1280, height: 720 }
+    });
     const page = await browser.newPage();
     await page.setExtraHTTPHeaders({ 'Accept-Language': 'zh-CN' });
     await page.goto(URL, { waitUntil: 'networkidle2' });
@@ -44,6 +42,5 @@ async function screenshotAndPush() {
   }
 }
 
-/* 30 秒一次，立即跑一次（测试完改回 30 分）*/
 cron.schedule('*/30 * * * * *', screenshotAndPush);
 screenshotAndPush();
