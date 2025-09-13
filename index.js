@@ -2,7 +2,7 @@ import axios from 'axios';
 import http from 'http';
 import cron from 'node-cron';
 
-const URL = 'https://d2emu.com/api/tz-china';   // 中文 JSON 接口
+const URL = 'https://d2emu.com/api/tz';
 const WEBHOOK = 'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=45022bb5-22a7-468c-a750-4f3c89ed4253';
 let lastHash = '';
 
