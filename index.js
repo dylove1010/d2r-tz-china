@@ -43,9 +43,9 @@ async function check() {
 async function push(title, text) {
   if (!SERVER_KEY) return;
   try {
-    const desp = text
-      .replace(/\s+/g, ' ')
-      .slice(0, 60000);
+   const desp = text
+  .replace(/\s+/g, ' ')   // 去换行
+  .slice(0, 40);          // 先截到 40 字
     await axios.post(
       `https://sctapi.ftqq.com/${SERVER_KEY}.send`,
       { title, desp }
