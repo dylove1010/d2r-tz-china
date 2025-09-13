@@ -25,7 +25,7 @@ async function check() {
   }
     });
     const $ = cheerio.load(data);
-    const text = $('.tooltip-container').text().replace(/\s+/g, ' ').trim();
+    const text = $('.tz-name').text().trim();
 
     /* 哈希对比 */
     const hash = Buffer.from(text).toString('base64').slice(0, 32);
@@ -47,8 +47,8 @@ async function push(title, text) {
   try {
     const content = `**${title}**\n>${text.slice(0, 2000)}`;
     await axios.post(WEBHOOK, {
-      msgtype: 'markdown',
-      markdown: { content }
+      msgtype: 'text',
+text: { content: `${title}\n${text.slice(0, 2000)}` }
     });
     console.log('[Push] 企业微信机器人已发送');
   } catch (e) {
