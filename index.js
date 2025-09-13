@@ -4,7 +4,7 @@ import http   from 'http';
 import cron   from 'node-cron';
 
 const URL     = 'https://d2emu.com/tz-china';
-const WEBHOOK = 'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=45022bb5-22a7-468c-a750-4f3c89ed4253';
+const WEBHOOK = 'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=b0bcfe46-3aa1-4071-afd5-da63be5a8644';
 let lastHash = '';
 
 /* ----- 占端口，让 Render 通过健康检查 ----- */
