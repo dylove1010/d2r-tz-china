@@ -40,19 +40,22 @@ async function check() {
 }
 
 /* ---------- 微信推送 ---------- */
-async function push(title, desp) {
+async function push(title, text) {
   if (!SERVER_KEY) return;
   try {
-    await axios.post(`https://sctapi.ftqq.com/${SERVER_KEY}.send`, {
-      title,
-      desp: desp?.slice(0, 60000) || '无内容'   // 避免超长
-    });
-    console.log('[Push] 已发送');
+    const desp = text
+      .replace(/\s+/g, ' ')
+      .slice(0, 60000);
+    await axios.post(
+      `https://sctapi.ftqq.com/${SERVER_KEY}.send`,
+      { title, desp }
+    );
+    console.log('[Push] desp长度=', desp.length);
   } catch (e) {
     console.error('[Push] 失败', e.response?.data || e.message);
   }
 }
-console.log('[Push] desp长度=', desp.length);
+
 /* 30 分钟一次，立即跑一次 */
 cron.schedule('*/30 * * * * *', check);
 check();
