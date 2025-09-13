@@ -1,34 +1,37 @@
-import axios from 'axios';
+import axios  from 'axios';
 import * as cheerio from 'cheerio';
-import http from 'http';
-import cron from 'node-cron';
+import http   from 'http';
+import cron   from 'node-cron';
 
-const URL     = 'https://d2emu.com/tz-china';
+const URL        = 'https://d2emu.com/tz-china';
 const SERVER_KEY = process.env.SERVER_KEY;   // Server 酱 SendKey
 let lastHash = '';
 
-/* ---------- 占端口，让 Render 通过健康检查 ---------- */
+/* ----- 占端口，让 Render 通过健康检查 ----- */
 const PORT = process.env.PORT || 3000;
 http.createServer((_, res) => res.end('ok'))
     .listen(PORT, '0.0.0.0', () => console.log(`Listening on ${PORT}`));
 
-/* ---------- 主检查 ---------- */
+/* ----- 主检查 ----- */
 async function check() {
   try {
     console.log('[Check] 开始抓取...');
-    const { data } = await axios.get(URL);
+    const { data } = await axios.get(URL, { timeout: 10000 });
     const $ = cheerio.load(data);
 
-    /* 1. 整个正文 */
-    const text = $('body').text().replace(/\s+/g, ' ').trim();
+    /* 1. 只拿“当前恐怖区域”文本块 */
+    const rawText = $('.tooltip-container').text().trim();   // 核心正文
+    const text = rawText.replace(/\s+/g, ' ');               // 去换行
 
-    /* 2. 算哈希 */
+    /* 2. 截 40 字，防详情页转圈 */
+    const desp = text.slice(0, 40) + (text.length > 40 ? '...' : '');
+
+    /* 3. 哈希对比 */
     const hash = Buffer.from(text).toString('base64').slice(0, 32);
-    console.log('[Check] 本次哈希', hash);
-
-    if (lastHash && hash !== lastHash) {
+    if (!lastHash) lastHash = 'force-trigger-' + Date.now(); // 第一次必推
+    if (hash !== lastHash) {
       console.log('[Check] 检测到变化，推送中...');
-      await push('网页已更新', text);   // 标题 + 正文
+      await push('网页已更新', desp);
     } else {
       console.log('[Check] 无变化');
     }
@@ -38,23 +41,20 @@ async function check() {
   }
 }
 
-/* ---------- 微信推送 ---------- */
-async function push(title, text) {
+/* ----- 微信推送 ----- */
+async function push(title, desp) {
   if (!SERVER_KEY) return;
   try {
-   const desp = text
-  .replace(/\s+/g, ' ')   // 去换行
-  .slice(0, 40);          // 先截到 40 字
     await axios.post(
       `https://sctapi.ftqq.com/${SERVER_KEY}.send`,
       { title, desp }
     );
-    console.log('[Push] desp长度=', desp.length);
+    console.log('[Push] 已发送');
   } catch (e) {
     console.error('[Push] 失败', e.response?.data || e.message);
   }
 }
 
-/* 30 分钟一次，立即跑一次 */
-cron.schedule('*/30 * * * *', check);
+/* 30 秒一次，立即跑一次（测试完改回 30 分钟） */
+cron.schedule('*/30 * * * * *', check);
 check();
