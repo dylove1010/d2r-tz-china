@@ -51,7 +51,7 @@ async function push(title, desp) {
     console.error('[Push] 失败', e.response?.data || e.message);
   }
 }
-
+let lastHash = 'force-trigger-' + Date.now();
 /* 30 分钟一次，立即跑一次 */
 cron.schedule('*/30 * * * * *', check);
 check();
