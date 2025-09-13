@@ -1,5 +1,5 @@
 import axios from 'axios';
-import puppeteer from 'puppeteer-core';
+import puppeteer from 'puppeteer';
 import http  from 'http';
 import cron  from 'node-cron';
 import crypto from 'crypto';
@@ -17,12 +17,12 @@ async function screenshotAndPush() {
   let browser;
   try {
     console.log('[Screenshot] 打开浏览器...');
-    browser = await puppeteer.launch({
-      executablePath: '/usr/bin/chromium', // Render 自带
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-      headless: true,
-      defaultViewport: { width: 1280, height: 720 }
-    });
+   browser = await puppeteer.launch({
+  executablePath: undefined,          // 让库自动下载浏览器
+  args: ['--no-sandbox', '--disable-setuid-sandbox'],
+  headless: true,
+  defaultViewport: { width: 1280, height: 720 }
+});
     const page = await browser.newPage();
     await page.setExtraHTTPHeaders({ 'Accept-Language': 'zh-CN' });
     await page.goto(URL, { waitUntil: 'networkidle2' });
