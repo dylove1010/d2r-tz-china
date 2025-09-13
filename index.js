@@ -25,7 +25,7 @@ async function check() {
   }
     });
     const $ = cheerio.load(data);
-    const text = $('.tz-name').text().trim();
+    const text = $('.tooltip-container').text().replace(/\s+/g, ' ').trim();
 
     /* 哈希对比 */
     const hash = Buffer.from(text).toString('base64').slice(0, 32);
