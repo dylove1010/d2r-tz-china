@@ -52,7 +52,7 @@ async function push(title, desp) {
     console.error('[Push] 失败', e.response?.data || e.message);
   }
 }
-
+console.log('[Push] desp长度=', desp.length);
 /* 30 分钟一次，立即跑一次 */
 cron.schedule('*/30 * * * * *', check);
 check();
